@@ -1,5 +1,4 @@
-//#![allow(unused_imports)]
-//use log::Level;
+// Import modules 
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::fmt;
@@ -12,13 +11,6 @@ pub enum GameState {
     Check,
     GameOver,
 }
-
-//Compile cargo documentation
-
-/* IMPORTANT:
- * - Document well!
- * - Write well structured and clean code!
- */
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Color {
@@ -43,212 +35,69 @@ pub enum PieceType {
     Corpse,
 }
 
-impl fmt::Display for PieceType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-        // or, alternatively:
-        // fmt::Debug::fmt(self, f)
-    }
-}
-
+// Defines a value() function for PieceTypes, which the AI uses   
 impl PieceType {
     fn value(&self) -> i32 {
         match *self {
             PieceType::Pawn => 1,
             PieceType::Knight => 3,
-
             PieceType::Bishop => 3,
-
             PieceType::Rook => 5,
             PieceType::Queen => 9,
             PieceType::King => 100,
             _ => 0,
         }
     }
-}
-
-impl Piece {
-    /*fn take_turn(&self) {
-        match self {
-            Piece::Pawn(_color) => (),
-            _ => (),
-        }
-    }*/
-    /*pub fn to_string() {
-        return Piece::PieceType
-    }*/
-}
+} 
 
 pub struct Game {
-    /* save board, active color, ... */
     state: GameState,
     pub board: [[Option<Piece>; 8]; 8],
     pub color: Color,
 }
 
-pub fn generate_board() -> [[Option<Piece>; 8]; 8] {
-    //[[Some(Piece { piecetype: PieceType::Rook, color: Color::Black }), None, Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), None, Some(Piece { piecetype: PieceType::King, color: Color::Black }), Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), None], [Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, None, Some(Piece { piecetype: PieceType::Queen, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, None], [None, None, Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), None, None, None, None, None], [Some(Piece { piecetype: PieceType::Queen, color: Color::Black }), None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black })], [None, Some(Piece { piecetype: PieceType::Rook, color: Color::Black }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None], [Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White })], [None, Some(Piece { piecetype: PieceType::Rook, color: Color::White }), None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, Some(Piece { piecetype: PieceType::Rook, color: Color::White })], [None, Some(Piece { piecetype: PieceType::Knight, color: Color::White }), None, Some(Piece { piecetype: PieceType::King, color: Color::White }), None, Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), Some(Piece { piecetype: PieceType::Knight, color: Color::White }), None]]
-    //[[Some(Piece { piecetype: PieceType::Rook, color: Color::Black }), Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), Some(Piece { piecetype: PieceType::Queen, color: Color::Black }), Some(Piece { piecetype: PieceType::King, color: Color::Black }), Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), Some(Piece { piecetype: PieceType::Rook, color: Color::Black })], [Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black })], [Some(Piece { piecetype: PieceType::Queen, color: Color::White }), None, None, None, None, None, None, None], [None, None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, None], [Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Knight, color: Color::White }), Some(Piece { piecetype: PieceType::Knight, color: Color::White }), None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None], [None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::King, color: Color::White }), None, None, None, None], [None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White })], [Some(Piece { piecetype: PieceType::Rook, color: Color::White }), Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), None, None, None, Some(Piece { piecetype: PieceType::Rook, color: Color::White }), None]]
-    //[[None, None, None, None, Some(Piece { piecetype: PieceType::King, color: Color::Black }), Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), Some(Piece { piecetype: PieceType::Rook, color: Color::Black })], [None, None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black })], [Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, None, None, None, None], [None, None, None, None, None, None, None, None], [None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, None, None, None], [None, None, None, None, None, None, None, None], [None, None, None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White })], [None, None, None, Some(Piece { piecetype: PieceType::Queen, color: Color::White }), Some(Piece { piecetype: PieceType::King, color: Color::White }), None, None, Some(Piece { piecetype: PieceType::Rook, color: Color::White })]]
-    //[[Some(Piece { piecetype: PieceType::Rook, color: Color::Black }), None, None, None, Some(Piece { piecetype: PieceType::King, color: Color::Black }), Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), Some(Piece { piecetype: PieceType::Rook, color: Color::Black })], [Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black })], [Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, None, None, None, None, None, None], [None, None, None, None, None, None, None, None], [None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, None, None, None, None], [None, None, None, None, None, None, None, None], [None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Knight, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White })], [None, Some(Piece { piecetype: PieceType::Queen, color: Color::Black }), Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), Some(Piece { piecetype: PieceType::Queen, color: Color::White }), Some(Piece { piecetype: PieceType::King, color: Color::White }), Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), None, Some(Piece { piecetype: PieceType::Rook, color: Color::White })]]
-    [
-        [
-            Some(Piece {
-                piecetype: PieceType::Rook,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Knight,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Bishop,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Queen,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::King,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Bishop,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Knight,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Rook,
-                color: Color::White,
-            }),
-        ],
-        [
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-        ],
-        [None, None, None, None, None, None, None, None],
-        [None, None, None, None, None, None, None, None],
-        [None, None, None, None, None, None, None, None],
-        [None, None, None, None, None, None, None, None],
-        [
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::Black,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Pawn,
-                color: Color::White,
-            }),
-        ],
-        [
-            Some(Piece {
-                piecetype: PieceType::Rook,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Knight,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Bishop,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Queen,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::King,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Bishop,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Knight,
-                color: Color::White,
-            }),
-            Some(Piece {
-                piecetype: PieceType::Rook,
-                color: Color::White,
-            }),
-        ],
-    ]
-}
-
-// only use private functions (???)
 impl Game {
-    /// Initialises a new board with pieces.
+    /// Initialises a new game with a board and the starting color white 
     pub fn new() -> Game {
         Game {
-            /* initialise board, set active color to white, ... */
             state: GameState::InProgress,
-            /*wholestate: GameState,*/
             color: Color::White,
-            board: generate_board(), /*[[Piece::Pawn(Color::White); 8]; 8]*/ /*vec![[1; 8].to_vec(); 8],*/
+            board: Game::generate_board(), 
         }
     }
 
-    pub fn convert_letter_coordinates(_position: String) -> Vec<i8> {
+    fn generate_board() -> [[Option<Piece>; 8]; 8] {
+        let mut currentboard = [[None; 8]; 8];
+        let pieces = [PieceType::Rook, PieceType::Knight, PieceType::Bishop, PieceType::King, PieceType::Queen, PieceType::Bishop, PieceType::Knight, PieceType::Rook];
+
+        // Fills the second and seventh row with pawns 
+        for i in 0..8 {
+            currentboard[1][i] = Some(Piece {
+                piecetype: PieceType::Pawn,
+                color: Color::Black,
+            });
+            currentboard[6][i] = Some(Piece {
+                piecetype: PieceType::Pawn,
+                color: Color::White,
+            });
+        }
+
+        // Fills the first and last row with the right pieces
+        for i in 0..8 {
+            currentboard[0][i] = Some(Piece {
+                piecetype: pieces[i],
+                color: Color::Black,
+            });
+            currentboard[7][i] = Some(Piece {
+                piecetype: pieces[i],
+                color: Color::White,
+            });
+        }
+
+        currentboard
+    }
+
+    fn convert_letter_coordinates(_position: String) -> Vec<i8> {
         //let mut vectorcoordinates : Vec<>= vec![];
         let mut coordinate_hashmap: HashMap<String, i8> = HashMap::new();
         let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H"];
@@ -357,7 +206,7 @@ impl Game {
 
     }*/
 
-    pub fn evaluate_board_state(&mut self) -> (i32, i32) {
+    fn evaluate_board_state(&mut self) -> (i32, i32) {
         let mut white_value_sum = 0;
         let mut black_value_sum = 0;
         for i in 0..8 {
@@ -382,7 +231,7 @@ impl Game {
         return (white_value_sum, black_value_sum);
     }
 
-    pub fn ai_get_random_move(&mut self) -> (String, String, Vec<i8>, Vec<i8>) {
+    fn ai_get_random_move(&mut self) -> (String, String, Vec<i8>, Vec<i8>) {
         let owncolor = self.color;
         let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
         let randommoveto = all_possible_moves.choose(&mut rand::thread_rng()).unwrap();
@@ -402,7 +251,7 @@ impl Game {
         );
     }
 
-    pub fn ai_get_sequential_move(&mut self, i: usize) -> (String, String, Vec<i8>, Vec<i8>) {
+    fn ai_get_sequential_move(&mut self, i: usize) -> (String, String, Vec<i8>, Vec<i8>) {
         let owncolor = self.color;
         let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
         //println!("{:?}", owncolor);
@@ -451,7 +300,7 @@ impl Game {
         Game::print(self);
     }*/
 
-    pub fn get_data_of_opposite_color(&mut self) -> i32 {
+    fn get_data_of_opposite_color(&mut self) -> i32 {
         let mut owncolor = self.color;
         let mut best_evaluation = 150;
         let mut best_move: String = "A2".to_string();
@@ -490,7 +339,7 @@ impl Game {
         return best_evaluation
     }
 
-    pub fn get_data_of_my_color(&mut self) {
+    fn get_data_of_my_color(&mut self) {
         let mut owncolor = self.color;
         let mut best_evaluation = 150;
         let mut best_move: String = "A2".to_string();
@@ -550,7 +399,7 @@ impl Game {
         }
     }
 
-    pub fn chess_ai(&mut self) {
+    fn chess_ai(&mut self) {
         for mut i in 0..200 {
             let mut owncolor = self.color;
             let mut checkmate = false;
@@ -752,7 +601,7 @@ impl Game {
         //println!("{:?}", self.state)
     }
 
-    pub fn opposite_func(own_color: Color) -> Color {
+    fn opposite_func(own_color: Color) -> Color {
         if own_color == Color::White {
             Color::Black
         } else {
@@ -760,7 +609,7 @@ impl Game {
         }
     }
 
-    pub fn get_all_possible_moves(
+    fn get_all_possible_moves(
         &mut self,
         opposite_color: &Color,
     ) -> (Vec<Vec<i8>>, HashMap<Vec<i8>, Vec<i8>>) {
@@ -787,7 +636,7 @@ impl Game {
         return (all_possible_moves, coordinate_hashmap);
     }
 
-    pub fn convert_coordinates(_position: &Vec<Vec<i8>>) -> Vec<String> {
+    fn convert_coordinates(_position: &Vec<Vec<i8>>) -> Vec<String> {
         let mut letter_coordinate_array = vec![];
         //let mut coordinate_hashmap : HashMap<Vec<i8>, String> = HashMap::new();
         let letter_array = ["A", "B", "C", "D", "E", "F", "G", "H"];
@@ -805,7 +654,7 @@ impl Game {
         return letter_coordinate_array;
     }
 
-    pub fn get_king_position(&mut self) -> Vec<i8> {
+    fn get_king_position(&mut self) -> Vec<i8> {
         let mut king_position = vec![];
         for i in 0..8 {
             for j in 0..8 {
@@ -822,7 +671,7 @@ impl Game {
         return king_position;
     }
 
-    pub fn check_check(&mut self) -> bool {
+    fn check_check(&mut self) -> bool {
         //let mut all_possible_moves = vec![];
         let own_color = self.color;
         let opposite_color = Game::opposite_func(own_color);
@@ -853,7 +702,7 @@ impl Game {
         // This is god damn complicated
     }
 
-    pub fn checkmate(&mut self) -> bool {
+    fn checkmate(&mut self) -> bool {
         //let king_position = Game::get_king_position(self);
         /*let (all_possible_king_moves_letters, _allpossiblekingmovescoordinates) =
         Game::get_possible_moves(self, &king_position);*/
@@ -938,12 +787,11 @@ impl Game {
                 .color;
             let current_piecetype = self.board[_position[1] as usize][_position[0] as usize]
                 .unwrap()
-                .piecetype
-                .to_string();
+                .piecetype;
             //println!("{:?}", current_piecetype);
             let opposite_color = Game::opposite_func(own_color);
 
-            pub fn add_function(
+            fn add_function(
                 current_vector: Vec<Vec<i8>>,
                 mut possible_moves: Vec<Vec<i8>>,
                 position: &Vec<i8>,
@@ -965,7 +813,7 @@ impl Game {
             }
 
             // Next step is to figure out how to access the (1st) pawn color and (2nd, or maybe obvious once you figure out color) board state from within this function
-            pub fn bishop_function(
+            fn bishop_function(
                 bishop_vector: &mut Vec<Vec<i8>>,
                 board: &[[Option<Piece>; 8]; 8],
                 color: &Color,
@@ -1037,7 +885,7 @@ impl Game {
                 return bishop_vector.to_vec();
             }
 
-            pub fn rook_function(
+            fn rook_function(
                 possible_moves: &mut Vec<Vec<i8>>,
                 position: &Vec<i8>,
                 board: &[[Option<Piece>; 8]; 8],
@@ -1126,7 +974,7 @@ impl Game {
                 return possible_moves.to_vec();
             }
 
-            pub fn convert_usize(possiblenegative: i8, othertoconvert: i8) -> usize {
+            fn convert_usize(possiblenegative: i8, othertoconvert: i8) -> usize {
                 let sum = possiblenegative + othertoconvert;
                 if sum < 0 || sum > 7 {
                     return 7 as usize;
@@ -1135,7 +983,7 @@ impl Game {
                 }
             }
 
-            let mut new_position = if current_piecetype == "Pawn" {
+            let mut new_position = if current_piecetype == PieceType::Pawn {
                 let to_add_one = if own_color == Color::Black { 1 } else { -1 };
                 let to_add_two = if own_color == Color::Black { 2 } else { -2 };
                 let start_position = if own_color == Color::Black { 1 } else { 6 };
@@ -1192,19 +1040,19 @@ impl Game {
                 }
 
                 possible_moves
-            } else if current_piecetype == "Rook" {
+            } else if current_piecetype == PieceType::Rook {
                 let mut possible_moves = vec![];
                 possible_moves =
                     rook_function(&mut possible_moves, &_position, &self.board, &own_color);
                 possible_moves
-            } else if current_piecetype == "Knight" {
+            } else if current_piecetype == PieceType::Knight {
                 let mut possible_moves = vec![];
-                /*let horse_vector = vec![-1, 1];
-                let otherhorse_vector = vec![-2, 2]
+                /*let knight_vector = vec![-1, 1];
+                let otherknight_vector = vec![-2, 2]
                 for i in 0..2 {
-                    possible_moves.push(vec![_position[0]+horse_vector[i], _position[1] + otherhorse_vector[i]]);
+                    possible_moves.push(vec![_position[0]+knight_vector[i], _position[1] + otherknight_vector[i]]);
                 }*/
-                let horse_vector = vec![
+                let knight_vector = vec![
                     vec![1, 2],
                     vec![-1, 2],
                     vec![-1, -2],
@@ -1214,9 +1062,9 @@ impl Game {
                     vec![2, 1],
                     vec![-2, -1],
                 ];
-                possible_moves = add_function(horse_vector, possible_moves, &_position);
+                possible_moves = add_function(knight_vector, possible_moves, &_position);
                 possible_moves
-            } else if current_piecetype == "King" {
+            } else if current_piecetype == PieceType::King {
                 let mut possible_moves = vec![];
                 let kingvector = vec![
                     vec![1, 1],
@@ -1230,7 +1078,7 @@ impl Game {
                 ];
                 possible_moves = add_function(kingvector, possible_moves, &_position);
                 possible_moves
-            } else if current_piecetype == "Bishop" {
+            } else if current_piecetype == PieceType::Bishop {
                 let mut bishop_vector = vec![];
                 let possible_moves =
                     bishop_function(&mut bishop_vector, &self.board, &own_color, &_position);
@@ -1238,7 +1086,7 @@ impl Game {
                 //println!("{:?}", bishop_vector);
                 //possible_moves = add_function(bishop_vector, possible_moves, &_position);
                 possible_moves
-            } else if current_piecetype == "Queen" {
+            } else if current_piecetype == PieceType::Queen {
                 let mut queen_vector = vec![];
                 let mut possible_moves =
                     bishop_function(&mut queen_vector, &self.board, &own_color, &_position);
