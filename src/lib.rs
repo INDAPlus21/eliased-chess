@@ -1,4 +1,4 @@
-// Import modules 
+// Import modules
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::fmt;
@@ -35,7 +35,7 @@ pub enum PieceType {
     Corpse,
 }
 
-// Defines a value() function for PieceTypes, which the AI uses   
+// Defines a value() function for PieceTypes, which the AI uses
 impl PieceType {
     fn value(&self) -> i32 {
         match *self {
@@ -48,7 +48,7 @@ impl PieceType {
             _ => 0,
         }
     }
-} 
+}
 
 pub struct Game {
     state: GameState,
@@ -57,20 +57,29 @@ pub struct Game {
 }
 
 impl Game {
-    /// Initialises a new game with a board and the starting color white 
+    /// Initialises a new game with a board and the starting color white
     pub fn new() -> Game {
         Game {
             state: GameState::InProgress,
             color: Color::White,
-            board: Game::generate_board(), 
+            board: Game::generate_board(),
         }
     }
 
     fn generate_board() -> [[Option<Piece>; 8]; 8] {
         let mut currentboard = [[None; 8]; 8];
-        let pieces = [PieceType::Rook, PieceType::Knight, PieceType::Bishop, PieceType::King, PieceType::Queen, PieceType::Bishop, PieceType::Knight, PieceType::Rook];
+        let pieces = [
+            PieceType::Rook,
+            PieceType::Knight,
+            PieceType::Bishop,
+            PieceType::King,
+            PieceType::Queen,
+            PieceType::Bishop,
+            PieceType::Knight,
+            PieceType::Rook,
+        ];
 
-        // Fills the second and seventh row with pawns 
+        // Fills the second and seventh row with pawns
         for i in 0..8 {
             currentboard[1][i] = Some(Piece {
                 piecetype: PieceType::Pawn,
@@ -97,49 +106,67 @@ impl Game {
         currentboard
     }
 
-    fn convert_letter_coordinates(_position: String) -> Vec<i8> {
-        //let mut vectorcoordinates : Vec<>= vec![];
+    /*Convert between the string (e.g. "A1") and vector (e.g. [0, 1])
+    representation of coordinates, because make_move uses strings as parameters*/
+    fn convert_string_to_vec(_position: String) -> Vec<i8> {
+        // Creates a hashmap with all letters associated to their position in the alphabet
         let mut coordinate_hashmap: HashMap<String, i8> = HashMap::new();
         let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H"];
         for i in 0..alphabet.iter().count() {
             coordinate_hashmap.insert(alphabet[i].to_string(), i as i8);
         }
-        //println!("{:?}", coordinate_hashmap);
-        let first_letter = &_position.chars().nth(0).unwrap();
-        let first_letter: &char = &*first_letter;
-        //println!("{:?}", first_letter);
+
+        // Get the first and second character, and then convert the second "letter" to an integer
+        let first_letter = _position.chars().nth(0).unwrap();
         let second_letter = _position.chars().nth(1).unwrap().to_string();
         let second_letter: i8 = second_letter.trim().parse().unwrap();
-        //println!("{:?}", second_letter);
-        //println!("{:?}", my_num);
+
+        // Gets the associated integer to the second character
         let new_coordinate = vec![
             coordinate_hashmap[&first_letter.to_string()],
             8 - second_letter,
         ];
-        //println!("{:?}", new_coordinate);
+
         return new_coordinate;
     }
 
-    // Next step is check and GameOver (!)
+    // Pair function to convert_string_to_vec
+    fn convert_vec_to_string(_position: &Vec<Vec<i8>>) -> Vec<String> {
+        let mut letter_coordinate_vec = vec![];
+        let letter_vec = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
+        /*Add the index in letter_vec corresponding to the vector's 
+        first number to letter_coordinate_vec, as well as the second 
+        number converted to a string*/
+        for i in 0.._position.iter().count() {
+            letter_coordinate_vec.push(
+                letter_vec[_position[i][0] as usize].to_string()
+                    + &(8 - _position[i][1]).to_string(),
+            )
+        }
+        return letter_coordinate_vec;
+    }
 
     /// If the current game state is InProgress and the move is legal,
     /// move a piece and return the resulting state of the game.
     pub fn make_move(&mut self, _from: &String, _to: String, changecolor: bool) -> GameState {
         if Game::get_game_state(self) == GameState::InProgress {
-            let piece_to_move = Game::convert_letter_coordinates(_from.to_string());
+            let piece_to_move = Game::convert_string_to_vec(_from.to_string());
             let own_color = self.board[piece_to_move[1] as usize][piece_to_move[0] as usize]
                 .unwrap()
                 .color;
+
+            // Used to alert of invalid moves when playing in the terminal
             let mut made_move = false;
+
             if own_color == self.color {
-                let square_to_move_to = Game::convert_letter_coordinates(_to);
-                /*println!(
-                    "To move, move to: {:?} {:?}",
-                    piece_to_move, square_to_move_to
-                );*/
+                let square_to_move_to = Game::convert_string_to_vec(_to);
+
                 let (_irrelevant, possible_moves) = Game::get_possible_moves(self, &piece_to_move);
-                //let possible_movesvector = [];
-                //println!("Possible: {:?}", possible_moves);
+
+                /*Iterates through possible moves, and if it finds that the square to move to is
+                in possible moves, set previous position to None and the new position
+                to its previous position's data*/
                 for i in 0..possible_moves.iter().count() {
                     if square_to_move_to[0] == possible_moves[i][0]
                         && square_to_move_to[1] == possible_moves[i][1]
@@ -157,13 +184,13 @@ impl Game {
                         made_move = true;
                     }
                 }
+
                 if !made_move {
                     println!("Invalid move!")
                 } else {
-                    //Game::print(&self);
+                    // Changecolor (the last parameter) has to be false for checkmate to work
                     if changecolor {
                         println!("Changing color");
-                        // You changed this because it interfered with checkmate (!)
                         if self.color == Color::White {
                             self.color = Color::Black;
                         } else {
@@ -172,40 +199,16 @@ impl Game {
                     }
                 }
             } else {
+                // If the wrong player made the move
                 println!("It's {:?}'s turn, you know", self.color)
             }
         }
-        Game::set_promotion(self);
+
+        Game::set_promotion(self, PieceType::Queen);
         Game::get_game_state(&self)
     }
 
-    /*pub fn gui() -> Result<(), PlatformError>{
-    {
-               let main_window = WindowDesc::new(ui_builder);
-               let data = 0_u32;
-               AppLauncher::with_window(main_window)
-                   .use_simple_logger()
-                   .launch(data)
-           }
-
-           fn ui_builder() -> impl Widget<u32> {
-               // The label text will be computed dynamically based on the current locale and count
-               let text =
-                   LocalizedString::new("hello-counter").with_arg("count", |data: &u32, _env| (*data).into());
-               let label = Label::new(text).padding(5.0).center();
-               let button = Button::new("increment")
-                   .on_click(|_ctx, data, _env| *data += 1)
-                   .padding(5.0);
-
-               Flex::column().with_child(label).with_child(button)
-           }
-       }*/
-
-    /*#[derive(Copy, Clone, Debug, PartialEq)]
-    pub enum PieceValues {
-
-    }*/
-
+    // The below code is for a terrible AI, uncommented because everything will change 
     fn evaluate_board_state(&mut self) -> (i32, i32) {
         let mut white_value_sum = 0;
         let mut black_value_sum = 0;
@@ -231,39 +234,20 @@ impl Game {
         return (white_value_sum, black_value_sum);
     }
 
-    fn ai_get_random_move(&mut self) -> (String, String, Vec<i8>, Vec<i8>) {
-        let owncolor = self.color;
-        let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
-        let randommoveto = all_possible_moves.choose(&mut rand::thread_rng()).unwrap();
-        let randommove = &very_useful_map[randommoveto]; //.clone()].clone()
-                                                         //println!("A random move: {:?}", randommove);
-                                                         //println!("A random move to: {:?}", randommoveto);
-        let randommovestring = Game::convert_coordinates(&vec![randommove.to_vec()])[0].clone();
-        //println!("A random move string: {:?}", randommovestring);
-        let randommovetostring = Game::convert_coordinates(&vec![randommoveto.to_vec()])[0].clone();
-        //println!("A random move to string: {:?}", randommovetostring);
-        //println!("All possible: {:?}", very_useful_map);
-        return (
-            randommovestring,
-            randommovetostring,
-            randommove.to_vec(),
-            randommoveto.to_vec(),
-        );
-    }
-
+    // The below code is for a terrible AI, uncommented because everything will change 
     fn ai_get_sequential_move(&mut self, i: usize) -> (String, String, Vec<i8>, Vec<i8>) {
         let owncolor = self.color;
         let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
         //println!("{:?}", owncolor);
-        let mut reali = i; 
+        let mut reali = i;
         if i >= all_possible_moves.len() {
             reali = all_possible_moves.len() - 1
         }
         let randommoveto = &all_possible_moves[reali].clone();
-        let randommove = very_useful_map[randommoveto].clone(); 
-        let randommovestring = Game::convert_coordinates(&vec![randommove.to_vec()])[0].clone();
+        let randommove = very_useful_map[randommoveto].clone();
+        let randommovestring = Game::convert_vec_to_string(&vec![randommove.to_vec()])[0].clone();
         //println!("A random move string: {:?}", randommovestring);
-        let randommovetostring = Game::convert_coordinates(&vec![randommoveto.to_vec()])[0].clone();
+        let randommovetostring = Game::convert_vec_to_string(&vec![randommoveto.to_vec()])[0].clone();
         //println!("A random move to string: {:?}", randommovetostring);
         //println!("All possible: {:?}", very_useful_map);
         return (
@@ -273,40 +257,14 @@ impl Game {
             randommoveto.to_vec(),
         );
     }
-
-    /*pub fn eval_best_move(&mut self) {
-        let (white_value_sum, black_value_sum) = Game::evaluate_board_state(self);
-        if self.color == Color::White && best_evaluation > black_value_sum {
-            best_evaluation = black_value_sum;
-            best_move = randommovestring;
-            best_move_to = randommovetostring;
-        } else if self.color == Color::Black && best_evaluation > white_value_sum {
-            best_evaluation = white_value_sum;
-            best_move = randommovestring;
-            best_move_to = randommovetostring;
-        }
-        self.board = saved_boardstate;
-    }
-
-    pub fn make_actual_ai_move(&mut self) {
-        println!("Hellooooo!");
-        Game::print(self);
-        //println!("testing board: {:?}", self.board);
-        println!("Whose turn: {:?}", owncolor);
-        println!("Best evaulation: {:?}", best_evaluation);
-        println!("White: {:?}", white_value_sum);
-        println!("Black: {:?}", black_value_sum);
-        Game::make_move(self, &best_move, best_move_to.to_string(), true);
-        Game::print(self);
-    }*/
 
     fn get_data_of_opposite_color(&mut self) -> i32 {
         let mut owncolor = self.color;
         let mut best_evaluation = 150;
         let mut best_move: String = "A2".to_string();
         let mut best_move_to: String = "A3".to_string();
-        let opposite_color = Game::opposite_func(owncolor);
-        self.color = opposite_color; 
+        let opposite_color = Game::opposite_color_func(owncolor);
+        self.color = opposite_color;
         let saved_boardstate = self.board;
         let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
         for mut j in 0..all_possible_moves.iter().count() {
@@ -322,7 +280,7 @@ impl Game {
                 false,
             );
 
-            // Evals best move 
+            // Evals best move
             let (white_value_sum, black_value_sum) = Game::evaluate_board_state(self);
             if owncolor == Color::White && best_evaluation > black_value_sum {
                 best_evaluation = black_value_sum;
@@ -336,7 +294,7 @@ impl Game {
 
             self.board = saved_boardstate;
         }
-        return best_evaluation
+        return best_evaluation;
     }
 
     fn get_data_of_my_color(&mut self) {
@@ -344,11 +302,11 @@ impl Game {
         let mut best_evaluation = 150;
         let mut best_move: String = "A2".to_string();
         let mut best_move_to: String = "A3".to_string();
-        let opposite_color = Game::opposite_func(owncolor);
+        let opposite_color = Game::opposite_color_func(owncolor);
         let saved_boardstate = self.board;
         let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
-        //let mut best_outcome_for_opposite = 150; 
-        let all_equal_moves : Vec<i32> = vec![];
+        //let mut best_outcome_for_opposite = 150;
+        let all_equal_moves: Vec<i32> = vec![];
         for mut j in 0..all_possible_moves.iter().count() {
             let saved_boardstate = self.board;
             //let (randommovestring, randommovetostring, randommove, randommoveto) = Game::ai_get_random_move(self);
@@ -362,10 +320,10 @@ impl Game {
                 false,
             );
 
-            // Evals best move 
+            // Evals best move
             let best_outcome_for_opposite = Game::get_data_of_opposite_color(self);
 
-            self.color = owncolor; 
+            self.color = owncolor;
 
             if best_evaluation > best_outcome_for_opposite {
                 best_evaluation = best_outcome_for_opposite;
@@ -393,8 +351,8 @@ impl Game {
             Game::get_data_of_my_color(self);
             let (white_value_sum, black_value_sum) = Game::evaluate_board_state(self);
             if white_value_sum < 100 || black_value_sum < 100 {
-                    println!("{:?} lost on Turn {:?}", self.color, i);
-                    break;
+                println!("{:?} lost on Turn {:?}", self.color, i);
+                break;
             }
         }
     }
@@ -406,23 +364,23 @@ impl Game {
             let mut best_evaluation = 150;
             let mut best_move: String = "A2".to_string();
             let mut best_move_to: String = "A3".to_string();
-            let opposite_color = Game::opposite_func(owncolor);
+            let opposite_color = Game::opposite_color_func(owncolor);
             let saved_boardstate = self.board;
             let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
-    
+
             for j in 0..all_possible_moves.iter().count() {
                 let saved_boardstate = self.board;
                 //let (randommovestring, randommovetostring, randommove, randommoveto) = Game::ai_get_random_move(self);
                 let (randommovestring, randommovetostring, randommove, randommoveto) =
                     Game::ai_get_sequential_move(self, j);
-    
+
                 Game::make_move(
                     self,
                     &randommovestring,
                     randommovetostring.to_string(),
                     false,
                 );
-    
+
                 let (white_value_sum, black_value_sum) = Game::evaluate_board_state(self);
                 //println!("Current color : {:?}", owncolor);
                 if self.color == Color::White && best_evaluation > black_value_sum {
@@ -434,13 +392,13 @@ impl Game {
                     best_move = randommovestring;
                     best_move_to = randommovetostring;
                 }
-    
+
                 self.board = saved_boardstate;
                 //self.color = owncolor;
                 //self.color = opposite_color;
                 //println!("Current color : {:?}", self.color);
                 //Game::print(self);
-    
+
                 /*if Game::check_check(self) {
                     if Game::checkmate(self) {
                         println!("Checkmate!!!");
@@ -470,7 +428,7 @@ impl Game {
             //println!("{:?} {:?}", {"{:?}"}, &best_move);
             //println!("{:?} {:?}", {"{:?}"}, &best_move_to);
             //let hmm = best_move.clone();
-    
+
             if white_value_sum < 100 || black_value_sum < 100 {
                 println!("{:?} lost on Turn {:?}", self.color, i);
                 break;
@@ -480,19 +438,20 @@ impl Game {
     }
 
     /// Set the piece type that a peasant becames following a promotion.
-    // Differerent than Queen
-    pub fn set_promotion(&mut self) -> () {
-        // Why was there a string there?
+    pub fn set_promotion(&mut self, _piece: PieceType) -> () {
+
+        /*Rotates through the first and last row, and if a 
+        piece of the desired color is found, change it to _piece*/
         for mut i in 0..16 {
             let mut preffered_color = Color::White;
-            let mut row_to_check = 0;
-            if i > 7 {
+            let row_to_check = if i > 7 {
                 i -= 8;
                 preffered_color = Color::Black;
-                row_to_check = 7;
-            }
+                7
+            } else {
+                0
+            };
             if self.board[row_to_check][i] != None
-            /*|| self.board[i][j] == Some(Piece::Rook(Color::Black))*/
             {
                 let own_color = self.board[row_to_check][i].unwrap().color;
                 if self.board[row_to_check][i].unwrap().piecetype == PieceType::Pawn
@@ -500,7 +459,7 @@ impl Game {
                 {
                     let own_color = self.board[row_to_check][i].unwrap().color;
                     self.board[row_to_check][i as usize] = Some(Piece {
-                        piecetype: PieceType::Queen,
+                        piecetype: _piece,
                         color: own_color,
                     });
                 }
@@ -508,27 +467,29 @@ impl Game {
         }
     }
 
+    // Plays the game in the terminal with string inputs 
     pub fn play_the_game(&mut self) {
         let stdin = io::stdin();
         println!("White, enter your first move: ");
+
+        // Creates a vector with all valid moves, to check against input later 
         let mut all_valid = vec![];
         let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H"];
-        //println!("{:?}", "A".push_str(1.to_string()));
         for i in 1..9 {
             for j in 1..9 {
-                all_valid.push(format!("{}{}", alphabet[i-1].to_string(), j.to_string())/*alphabet[i].to_string().push_str(&(i.to_string()))*/);
+                all_valid.push(format!("{}{}", alphabet[i-1].to_string(), j.to_string()))
             }
         }
-        println!("all_valid: {:?}", all_valid);
+
+        /* Gets the first line (only relevant one), and if its length is 
+        right the string is converted to uppercase and a move is made */
         for line in stdin.lock().lines() {
             let unwrapped = line.unwrap();
             let unwrapped: &str = &*unwrapped;
             if &unwrapped.len() > &(4 as usize) {
-                let start_position = &unwrapped[0..2].to_uppercase(); //{ &"None".to_string() };
-                let finalposition = &unwrapped[3..5].to_uppercase(); // &"None".to_string() };
+                let start_position = &unwrapped[0..2].to_uppercase(); 
+                let finalposition = &unwrapped[3..5].to_uppercase(); 
                 if all_valid.contains(&start_position) && all_valid.contains(&finalposition) {
-                    //if start_position
-                    //println!("{} {}", start_position, finalposition);
                     Game::make_move(
                         self,
                         &start_position.to_string(),
@@ -545,8 +506,8 @@ impl Game {
         }
     }
 
+    // Prints the board in unicode 
     pub fn print(&self) {
-        //let board = [['*'; 8]; 8];
         println!("#-A--B--C--D--E--F--G--H-#");
         let mut lineiter = 9;
         for line in self.board {
@@ -595,13 +556,11 @@ impl Game {
         println!("#-A--B--C--D--E--F--G--H-#");
     }
 
-    /// Get the current game state.
     pub fn get_game_state(&self) -> GameState {
         self.state
-        //println!("{:?}", self.state)
     }
 
-    fn opposite_func(own_color: Color) -> Color {
+    fn opposite_color_func(own_color: Color) -> Color {
         if own_color == Color::White {
             Color::Black
         } else {
@@ -609,12 +568,14 @@ impl Game {
         }
     }
 
+    /* Gets all possible moves from a certain color by repeatedly calling 
+    get_possible_moves for all the pieces it finds by iterating through the board */
     fn get_all_possible_moves(
         &mut self,
         opposite_color: &Color,
     ) -> (Vec<Vec<i8>>, HashMap<Vec<i8>, Vec<i8>>) {
         let mut all_possible_moves = vec![];
-        let mut coordinate_hashmap: HashMap<Vec<i8>, Vec<i8>> = HashMap::new();
+        let mut move_from_to_hashmap: HashMap<Vec<i8>, Vec<i8>> = HashMap::new();
         for i in 0..8 {
             for j in 0..8 {
                 if self.board[j as usize][i as usize] != None {
@@ -622,38 +583,17 @@ impl Game {
                         let (_irrelevant, possible_moves) =
                             Game::get_possible_moves(self, &vec![i, j]);
                         for n in possible_moves {
-                            coordinate_hashmap.insert(n.clone(), vec![i, j]);
+                            move_from_to_hashmap.insert(n.clone(), vec![i, j]);
                             all_possible_moves.push(n);
                         }
                     }
                 }
             }
         }
-        /*println!(
-            "coordinate_hashmap coordinate_hashmap: {:?}",
-            coordinate_hashmap
-        );*/
-        return (all_possible_moves, coordinate_hashmap);
+        return (all_possible_moves, move_from_to_hashmap);
     }
 
-    fn convert_coordinates(_position: &Vec<Vec<i8>>) -> Vec<String> {
-        let mut letter_coordinate_array = vec![];
-        //let mut coordinate_hashmap : HashMap<Vec<i8>, String> = HashMap::new();
-        let letter_array = ["A", "B", "C", "D", "E", "F", "G", "H"];
-        for i in 0.._position.iter().count() {
-            letter_coordinate_array.push(
-                letter_array[_position[i][0] as usize].to_string()
-                    + &(8 - _position[i][1]).to_string(),
-            )
-        }
-        /*coordinate_hashmap.insert(
-            vec![0,1],
-            letter_array.to_string(),
-        );*/
-        //letter_coordinate_array.push(coordinate_hashmap[&vec![0, 1]].clone());
-        return letter_coordinate_array;
-    }
-
+    // Returns the king's position on the board 
     fn get_king_position(&mut self) -> Vec<i8> {
         let mut king_position = vec![];
         for i in 0..8 {
@@ -667,27 +607,16 @@ impl Game {
                 }
             }
         }
-        println!("{:?}", king_position);
         return king_position;
     }
 
+    // Returns if the king is in check or not 
     fn check_check(&mut self) -> bool {
-        //let mut all_possible_moves = vec![];
         let own_color = self.color;
-        let opposite_color = Game::opposite_func(own_color);
+        let opposite_color = Game::opposite_color_func(own_color);
         let king_position = Game::get_king_position(self);
-        /*for i in 0..8 {
-            for j in 0..8 {
-                if self.board[j as usize][i as usize] != None {
-                if self.board[j as usize][i as usize].unwrap().color == own_color && self.board[j as usize][i as usize].unwrap().piecetype == PieceType::King {
-                    king_position = vec![i, j]
-                }
-            }
-            }
-        }
-        println!("{:?}", king_position);*/
+
         let (all_possible_moves, _irrelevantmap) = self.get_all_possible_moves(&opposite_color);
-        println!("All possible moves: {:?}", all_possible_moves);
         if all_possible_moves.contains(&king_position) {
             println!("CHESS! CHESS! CHESS!");
             self.state = GameState::Check;
@@ -696,49 +625,29 @@ impl Game {
             println!("NO CHESS! NO CHESS! NO CHESS!");
             return false;
         }
-        /*for i in 0..all_possible_king_moves_letters.iter().count() {
-            //self.board[_position[1] as usize][_position[0] as usize]
-        }*/
-        // This is god damn complicated
     }
 
+    // Returns if it's checkmate or not.  
     fn checkmate(&mut self) -> bool {
-        //let king_position = Game::get_king_position(self);
-        /*let (all_possible_king_moves_letters, _allpossiblekingmovescoordinates) =
-        Game::get_possible_moves(self, &king_position);*/
-        //println!("King moves: {:?}", all_possible_king_moves_letters);
-        // change this !!!
-        let own_color = self.color; //Color::Black;
+        let own_color = self.color;  
         let (myall_possible_moves, useful_hashmap) = self.get_all_possible_moves(&own_color);
-        println!("My possible moves: {:?}", myall_possible_moves);
-        /*let king_positionstring: String =
-        Game::convert_coordinates(&vec![king_position])[0].to_string();*/
-        //println!("This is the realz");
         self.print();
-        //println!("Possible letters: {:?}", all_possible_king_moves_letters);
-        //println!("Possible moves: {:?}", all_possible_king_moves_letters[1]);
         let mut checkmate = true;
+
+        /* Iterates through all your possible moves, makes the move, 
+        checks if it's still check, sets checkmate to false if it's 
+        not check for any move, and reverts to the original boardstate.*/ 
         for i in 0..myall_possible_moves.iter().count() {
             let saved_boardstate = self.board;
-            //println!("{:?}", i);
-            //let cloned = &all_possible_king_moves_letters[i];
             self.make_move(
-                &Game::convert_coordinates(&vec![
+                &Game::convert_vec_to_string(&vec![
                     useful_hashmap[&myall_possible_moves[i].clone()].clone()
                 ])[0]
                     .clone(),
-                Game::convert_coordinates(&vec![myall_possible_moves[i].clone()])[0].clone(),
+                Game::convert_vec_to_string(&vec![myall_possible_moves[i].clone()])[0].clone(),
                 false,
             );
-            //println!("Immidiately after move: ");
-            //self.print();
-            //self.make_move(&king_positionstring, cloned.to_string());
-            //self.make_move(cloned.to_string(), king_positionstring);
-            let check = Game::check_check(self);
-            println!("{:?}", check);
-            println!("Changed move: {:?}", myall_possible_moves[i]);
-            println!("Non-Restored: ");
-            self.print();
+            let check = Game::check_check(self);            
             self.board = saved_boardstate;
             if !check {
                 checkmate = false;
@@ -748,23 +657,15 @@ impl Game {
         if checkmate {
             self.state = GameState::GameOver
         }
-        println!("testing board: {:?}", self.board);
-        println!("{:?}", self.state);
+        //println!("testing board: {:?}", self.board);
         return checkmate;
     }
 
-    // cargo test -- --nocapture --test-threads=1
-
-    /// If a piece is standing on the given tile, return all possible
-    /// new positions of that piece. Don't forget to the rules for check.
-    ///
-    /// (optional) Don't forget to include en passent and castling.
+    /* If a piece is standing on the given tile, return all possible
+    new positions of that piece, taking the rules for check into account*/ 
     pub fn get_possible_moves(&mut self, _position: &Vec<i8>) -> (Vec<String>, Vec<Vec<i8>>) {
-        //println!("{:?}", self.color);
-        /*println!(
-            "{:?}",
-            self.board[_position[1] as usize][_position[0] as usize]
-        );*/
+ 
+        // Reverts corpses (possible moves, visualized as X's, during debugging) to None
         for i in 0..8 {
             for j in 0..8 {
                 if self.board[j as usize][i as usize]
@@ -777,19 +678,19 @@ impl Game {
                 }
             }
         }
+
         let my_piece = self.board[_position[1] as usize][_position[0] as usize];
         if my_piece == None {
             //println!("Do nothing");
-            return (vec!["".to_string()], vec![vec![0, 1]]); //return option
+            return (vec!["".to_string()], vec![vec![0, 0]]); 
         } else {
-            let own_color = self.board[_position[1] as usize][_position[0] as usize]
+            let own_color = my_piece
                 .unwrap()
                 .color;
-            let current_piecetype = self.board[_position[1] as usize][_position[0] as usize]
+            let current_piecetype = my_piece
                 .unwrap()
                 .piecetype;
-            //println!("{:?}", current_piecetype);
-            let opposite_color = Game::opposite_func(own_color);
+            let opposite_color = Game::opposite_color_func(own_color);
 
             fn add_function(
                 current_vector: Vec<Vec<i8>>,
@@ -1008,7 +909,7 @@ impl Game {
                     //vec![vec![_position[0], _position[1] + 1], vec![_position[0], _position[1] + 2]]
                 }
                 if _position[1] == promotion_position {
-                    self.set_promotion()
+                    self.set_promotion(PieceType::Queen)
                 }
                 //println!("{:?}", self.board[1][0].unwrap().piecetype);
                 for i in 0..8 {
@@ -1152,16 +1053,16 @@ impl Game {
                 Game::print(&self)
             }*/
             //let evennewervector : Vec<Vec<i8>> = vec![];
-            let converted_new_vector = Game::convert_coordinates(&new_new_position);
+            let converted_new_vector = Game::convert_vec_to_string(&new_new_position);
 
             /*for i in 0..new_new_position.iter().count() {
                     let saved_boardstate = self.board;
                     self.make_move(
-                        &Game::convert_coordinates(&vec![
+                        &Game::convert_vec_to_string(&vec![
                             useful_hashmap[&myall_possible_moves[i].clone()].clone()
                         ])[0]
                             .clone(),
-                        Game::convert_coordinates(&vec![myall_possible_moves[i].clone()])[0].clone(), false
+                        Game::convert_vec_to_string(&vec![myall_possible_moves[i].clone()])[0].clone(), false
                     );
                     //println!("Immidiately after move: ");
                     //self.print();
@@ -1179,7 +1080,7 @@ impl Game {
             }*/
             //Game::checkmate(self);
 
-            //let even_newer_converted_new_vector = Game::convert_coordinates(&evennewervector);
+            //let even_newer_converted_new_vector = Game::convert_vec_to_string(&evennewervector);
             return (converted_new_vector, new_new_position);
 
             // You need to check for checkmate in Get Possible Moves
