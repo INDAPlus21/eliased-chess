@@ -2,16 +2,6 @@
 
 Observe that the AI isn't finished (and that that part of the code looks horrific), and that I haven't implement en passant, castling, nor deadposition. 
 
-8 ♖  ♘  ♗  ♕  ♔  ♗  ♘  ♖ 8
-7 ♙  ♙  ♙  ♙  ♙  ♙  ♙  ♙ 7
-6 .  .  .  .  .  .  .  . 6
-5 .  .  .  .  .  .  .  . 5
-4 .  .  .  .  .  .  .  . 4
-3 .  .  .  .  .  .  .  . 3
-2 ♟︎  ♟︎  ♟︎  ♟︎  ♟︎  ♟︎  ♟︎  ♟︎ 2
-1 ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ 1
-#-A--B--C--D--E--F--G--H-#
-
 | **Function** | **Description** |
 |--------------|-----------------|
 | `pub fn new() -> Game` | Initialises a new board with pieces. |
