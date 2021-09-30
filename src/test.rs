@@ -242,9 +242,9 @@ mod tests {
     }*/
 
     // Uncomment this to test the AI 
-    #[test]
+    /*#[test]
     fn test_it_yourself() {
         let mut game = Game::new();
         Game::better_chess_ai(&mut game);
-    }
+    }*/
 }
