@@ -2,6 +2,8 @@ mod lib;
 use std::fmt;
 use std::io;
 use std::io::prelude::*;
+mod test;
+
 //use ai;
 
 fn main() {
@@ -20,7 +22,7 @@ fn main() {
     //println!("{:?}", lib::Game::checkmate(&mut game));
     //lib::tests::get_possible_moves_pawn();
     //lib::Game::chess_ai(&mut game);
-    lib::Game::better_chess_ai(&mut game);
+    //lib::Game::better_chess_ai(&mut game);
     //lib::Game::evaluate_board_state(&mut game);
     //lib::Game::gui();
     //lib::Game::play_the_game(&mut game);
@@ -32,7 +34,7 @@ fn main() {
         let integer2 = nums[1];
         println!("{}", difference.abs());
     }*/
-    //lib::Game::get_possible_moves(&mut game, &vec![0, 2]);
+    lib::Game::get_possible_moves(&mut game, &vec![0, 1], false);
     //lib::Game::make_move(&mut game, "E6".to_string(), "E5".to_string());
     /*lib::Game::set_promotion(&mut game);
     lib::Game::print(&game);*/

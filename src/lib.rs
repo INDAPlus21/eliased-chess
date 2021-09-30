@@ -1,5 +1,5 @@
 // Import modules
-use rand::seq::SliceRandom;
+//use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::fmt;
 use std::io;
@@ -51,7 +51,7 @@ impl PieceType {
 }
 
 pub struct Game {
-    state: GameState,
+    pub state: GameState,
     pub board: [[Option<Piece>; 8]; 8],
     pub color: Color,
 }
@@ -72,8 +72,8 @@ impl Game {
             PieceType::Rook,
             PieceType::Knight,
             PieceType::Bishop,
-            PieceType::King,
             PieceType::Queen,
+            PieceType::King,
             PieceType::Bishop,
             PieceType::Knight,
             PieceType::Rook,
@@ -103,6 +103,7 @@ impl Game {
             });
         }
 
+        //currentboard = [[Some(Piece { piecetype: PieceType::Rook, color: Color::Black }), None, Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), None, Some(Piece { piecetype: PieceType::King, color: Color::Black }), Some(Piece { piecetype: PieceType::Bishop, color: Color::Black }), Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), None], [Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, None, Some(Piece { piecetype: PieceType::Queen, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, None], [None, None, Some(Piece { piecetype: PieceType::Knight, color: Color::Black }), None, None, None, None, None], [Some(Piece { piecetype: PieceType::Queen, color: Color::Black }), None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::Black }), Some(Piece { piecetype: PieceType::Pawn, color: Color::Black })], [None, Some(Piece { piecetype: PieceType::Rook, color: Color::Black }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None], [Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White })], [None, Some(Piece { piecetype: PieceType::Rook, color: Color::White }), None, None, None, Some(Piece { piecetype: PieceType::Pawn, color: Color::White }), None, Some(Piece { piecetype: PieceType::Rook, color: Color::White })], [None, Some(Piece { piecetype: PieceType::Knight, color: Color::White }), None, Some(Piece { piecetype: PieceType::King, color: Color::White }), None, Some(Piece { piecetype: PieceType::Bishop, color: Color::White }), Some(Piece { piecetype: PieceType::Knight, color: Color::White }), None]];
         currentboard
     }
 
@@ -135,14 +136,19 @@ impl Game {
         let mut letter_coordinate_vec = vec![];
         let letter_vec = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
-        /*Add the index in letter_vec corresponding to the vector's 
-        first number to letter_coordinate_vec, as well as the second 
+        /*Add the index in letter_vec corresponding to the vector's
+        first number to letter_coordinate_vec, as well as the second
         number converted to a string*/
+
         for i in 0.._position.iter().count() {
+            if _position[i][0] >= 0 && _position[i][1] >= 0 {
+            /*println!("{:?}", letter_vec[_position[i][0] as usize].to_string()
+                + &(8 - _position[i][1]).to_string());*/
             letter_coordinate_vec.push(
                 letter_vec[_position[i][0] as usize].to_string()
                     + &(8 - _position[i][1]).to_string(),
             )
+        }
         }
         return letter_coordinate_vec;
     }
@@ -162,7 +168,8 @@ impl Game {
             if own_color == self.color {
                 let square_to_move_to = Game::convert_string_to_vec(_to);
 
-                let (_irrelevant, possible_moves) = Game::get_possible_moves(self, &piece_to_move);
+                let (_irrelevant, possible_moves) =
+                    Game::get_possible_moves(self, &piece_to_move, false);
 
                 /*Iterates through possible moves, and if it finds that the square to move to is
                 in possible moves, set previous position to None and the new position
@@ -208,7 +215,7 @@ impl Game {
         Game::get_game_state(&self)
     }
 
-    // The below code is for a terrible AI, uncommented because everything will change 
+    // The below code is for a terrible AI, uncommented because everything will change
     fn evaluate_board_state(&mut self) -> (i32, i32) {
         let mut white_value_sum = 0;
         let mut black_value_sum = 0;
@@ -234,12 +241,16 @@ impl Game {
         return (white_value_sum, black_value_sum);
     }
 
-    // The below code is for a terrible AI, uncommented because everything will change 
+    // The below code is for a terrible AI, uncommented because everything will change
     fn ai_get_sequential_move(&mut self, i: usize) -> (String, String, Vec<i8>, Vec<i8>) {
         let owncolor = self.color;
         let (all_possible_moves, very_useful_map) = self.get_all_possible_moves(&owncolor);
         //println!("{:?}", owncolor);
         let mut reali = i;
+        //println!("{:?}", all_possible_moves.len());
+        /*if all_possible_moves.len() == 0 {
+
+        }*/
         if i >= all_possible_moves.len() {
             reali = all_possible_moves.len() - 1
         }
@@ -247,7 +258,8 @@ impl Game {
         let randommove = very_useful_map[randommoveto].clone();
         let randommovestring = Game::convert_vec_to_string(&vec![randommove.to_vec()])[0].clone();
         //println!("A random move string: {:?}", randommovestring);
-        let randommovetostring = Game::convert_vec_to_string(&vec![randommoveto.to_vec()])[0].clone();
+        let randommovetostring =
+            Game::convert_vec_to_string(&vec![randommoveto.to_vec()])[0].clone();
         //println!("A random move to string: {:?}", randommovetostring);
         //println!("All possible: {:?}", very_useful_map);
         return (
@@ -357,8 +369,8 @@ impl Game {
         }
     }
 
-    fn chess_ai(&mut self) {
-        for mut i in 0..200 {
+    pub fn chess_ai(&mut self) {
+        for mut i in 0..1000 {
             let mut owncolor = self.color;
             let mut checkmate = false;
             let mut best_evaluation = 150;
@@ -439,8 +451,7 @@ impl Game {
 
     /// Set the piece type that a peasant becames following a promotion.
     pub fn set_promotion(&mut self, _piece: PieceType) -> () {
-
-        /*Rotates through the first and last row, and if a 
+        /*Rotates through the first and last row, and if a
         piece of the desired color is found, change it to _piece*/
         for mut i in 0..16 {
             let mut preffered_color = Color::White;
@@ -451,8 +462,7 @@ impl Game {
             } else {
                 0
             };
-            if self.board[row_to_check][i] != None
-            {
+            if self.board[row_to_check][i] != None {
                 let own_color = self.board[row_to_check][i].unwrap().color;
                 if self.board[row_to_check][i].unwrap().piecetype == PieceType::Pawn
                     && own_color == preffered_color
@@ -467,28 +477,29 @@ impl Game {
         }
     }
 
-    // Plays the game in the terminal with string inputs 
+    // Plays the game in the terminal with string inputs
     pub fn play_the_game(&mut self) {
         let stdin = io::stdin();
+        Game::print(self);
         println!("White, enter your first move: ");
 
-        // Creates a vector with all valid moves, to check against input later 
+        // Creates a vector with all valid moves, to check against input later
         let mut all_valid = vec![];
         let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H"];
         for i in 1..9 {
             for j in 1..9 {
-                all_valid.push(format!("{}{}", alphabet[i-1].to_string(), j.to_string()))
+                all_valid.push(format!("{}{}", alphabet[i - 1].to_string(), j.to_string()))
             }
         }
 
-        /* Gets the first line (only relevant one), and if its length is 
+        /* Gets the first line (only relevant one), and if its length is
         right the string is converted to uppercase and a move is made */
         for line in stdin.lock().lines() {
             let unwrapped = line.unwrap();
             let unwrapped: &str = &*unwrapped;
             if &unwrapped.len() > &(4 as usize) {
-                let start_position = &unwrapped[0..2].to_uppercase(); 
-                let finalposition = &unwrapped[3..5].to_uppercase(); 
+                let start_position = &unwrapped[0..2].to_uppercase();
+                let finalposition = &unwrapped[3..5].to_uppercase();
                 if all_valid.contains(&start_position) && all_valid.contains(&finalposition) {
                     Game::make_move(
                         self,
@@ -496,6 +507,7 @@ impl Game {
                         finalposition.to_string(),
                         true,
                     );
+                    Game::print(self);
                     println!("{:?}, enter your move: ", self.color);
                 } else {
                     println!("Invalid move! Enter new:")
@@ -506,7 +518,7 @@ impl Game {
         }
     }
 
-    // Prints the board in unicode 
+    // Prints the board in unicode
     pub fn print(&self) {
         println!("#-A--B--C--D--E--F--G--H-#");
         let mut lineiter = 9;
@@ -568,7 +580,7 @@ impl Game {
         }
     }
 
-    /* Gets all possible moves from a certain color by repeatedly calling 
+    /* Gets all possible moves from a certain color by repeatedly calling
     get_possible_moves for all the pieces it finds by iterating through the board */
     fn get_all_possible_moves(
         &mut self,
@@ -581,7 +593,7 @@ impl Game {
                 if self.board[j as usize][i as usize] != None {
                     if self.board[j as usize][i as usize].unwrap().color == *opposite_color {
                         let (_irrelevant, possible_moves) =
-                            Game::get_possible_moves(self, &vec![i, j]);
+                            Game::get_possible_moves(self, &vec![i, j], false);
                         for n in possible_moves {
                             move_from_to_hashmap.insert(n.clone(), vec![i, j]);
                             all_possible_moves.push(n);
@@ -593,7 +605,7 @@ impl Game {
         return (all_possible_moves, move_from_to_hashmap);
     }
 
-    // Returns the king's position on the board 
+    // Returns the king's position on the board
     fn get_king_position(&mut self) -> Vec<i8> {
         let mut king_position = vec![];
         for i in 0..8 {
@@ -610,8 +622,8 @@ impl Game {
         return king_position;
     }
 
-    // Returns if the king is in check or not 
-    fn check_check(&mut self) -> bool {
+    // Returns if the king is in check or not
+    pub fn check_check(&mut self) -> bool {
         let own_color = self.color;
         let opposite_color = Game::opposite_color_func(own_color);
         let king_position = Game::get_king_position(self);
@@ -627,27 +639,27 @@ impl Game {
         }
     }
 
-    // Returns if it's checkmate or not.  
+    // Returns if it's checkmate or not.
     fn checkmate(&mut self) -> bool {
-        let own_color = self.color;  
+        let own_color = self.color;
         let (myall_possible_moves, useful_hashmap) = self.get_all_possible_moves(&own_color);
         self.print();
         let mut checkmate = true;
 
-        /* Iterates through all your possible moves, makes the move, 
-        checks if it's still check, sets checkmate to false if it's 
-        not check for any move, and reverts to the original boardstate.*/ 
+        /* Iterates through all your possible moves, makes the move,
+        checks if it's still check, sets checkmate to false if it's
+        not check for any move, and reverts to the original boardstate.*/
         for i in 0..myall_possible_moves.iter().count() {
             let saved_boardstate = self.board;
             self.make_move(
-                &Game::convert_vec_to_string(&vec![
-                    useful_hashmap[&myall_possible_moves[i].clone()].clone()
-                ])[0]
+                &Game::convert_vec_to_string(&vec![useful_hashmap
+                    [&myall_possible_moves[i].clone()]
+                    .clone()])[0]
                     .clone(),
                 Game::convert_vec_to_string(&vec![myall_possible_moves[i].clone()])[0].clone(),
                 false,
             );
-            let check = Game::check_check(self);            
+            let check = Game::check_check(self);
             self.board = saved_boardstate;
             if !check {
                 checkmate = false;
@@ -662,9 +674,12 @@ impl Game {
     }
 
     /* If a piece is standing on the given tile, return all possible
-    new positions of that piece, taking the rules for check into account*/ 
-    pub fn get_possible_moves(&mut self, _position: &Vec<i8>) -> (Vec<String>, Vec<Vec<i8>>) {
- 
+    new positions of that piece, taking the rules for check into account*/
+    pub fn get_possible_moves(
+        &mut self,
+        _position: &Vec<i8>,
+        should_check: bool,
+    ) -> (Vec<String>, Vec<Vec<i8>>) {
         // Reverts corpses (possible moves, visualized as X's, during debugging) to None
         for i in 0..8 {
             for j in 0..8 {
@@ -682,22 +697,29 @@ impl Game {
         let my_piece = self.board[_position[1] as usize][_position[0] as usize];
         if my_piece == None {
             //println!("Do nothing");
-            return (vec!["".to_string()], vec![vec![0, 0]]); 
+            return (vec!["".to_string()], vec![vec![0, 0]]);
         } else {
-            let own_color = my_piece
-                .unwrap()
-                .color;
-            let current_piecetype = my_piece
-                .unwrap()
-                .piecetype;
+            let own_color = my_piece.unwrap().color;
+            let current_piecetype = my_piece.unwrap().piecetype;
             let opposite_color = Game::opposite_color_func(own_color);
 
+            // Adds two i8's together, because usize can't be negative
+            fn convert_usize(possiblenegative: i8, othertoconvert: i8) -> usize {
+                let sum = possiblenegative + othertoconvert;
+                if sum < 0 || sum > 7 {
+                    return 7 as usize;
+                } else {
+                    return sum as usize;
+                }
+            }
+
+            /*Adds the positions in the current_vector to possible_moves if
+            they are in the limits of the board*/
             fn add_function(
                 current_vector: Vec<Vec<i8>>,
                 mut possible_moves: Vec<Vec<i8>>,
                 position: &Vec<i8>,
             ) -> Vec<Vec<i8>> {
-                //println!("{:?}", current_vector.iter().count());
                 for i in 0..current_vector.iter().count() {
                     if position[0] + current_vector[i][0] < 8
                         && position[0] + current_vector[i][0] >= 0
@@ -713,18 +735,20 @@ impl Game {
                 return possible_moves;
             }
 
-            // Next step is to figure out how to access the (1st) pawn color and (2nd, or maybe obvious once you figure out color) board state from within this function
+            // Adds diagonal lines for the bishop and queen pieces
             fn bishop_function(
                 bishop_vector: &mut Vec<Vec<i8>>,
                 board: &[[Option<Piece>; 8]; 8],
                 color: &Color,
                 position: &Vec<i8>,
             ) -> Vec<Vec<i8>> {
-                let mut continue_xloop = true;
+                let mut continue_loop = true;
                 for fakei in 0..32 {
-                    if fakei == 8 || fakei == 16 || fakei == 24 {
-                        continue_xloop = true;
+                    // Goes from the input piece out in all directions, unless halted by continue_loop
+                    if fakei % 8 == 0 {
+                        continue_loop = true;
                     }
+
                     let i = if fakei < 8 {
                         fakei
                     } else if fakei < 16 {
@@ -734,6 +758,7 @@ impl Game {
                     } else {
                         fakei - 24
                     };
+
                     let j = if fakei < 8 {
                         fakei
                     } else if fakei < 16 {
@@ -743,49 +768,38 @@ impl Game {
                     } else {
                         -(fakei - 24)
                     };
-                    //println!("{} {}", i, j);
+
                     if board[convert_usize(position[1], i)][convert_usize(position[0], j)] != None
-                        && continue_xloop
+                        && continue_loop
                     {
-                        //println!("Hello 4");
                         if board[convert_usize(position[1], i)][convert_usize(position[0], j)]
                             .unwrap()
                             .color
                             != *color
                         {
-                            /*println!(
-                                "Add captured white: {:?}",
-                                vec![position[0] + j, position[1] + i]
-                            );*/
+                            // Adds a potential capture
                             bishop_vector.push(vec![position[0] + j, position[1] + i]);
-                            //continue_xloop = false;
+                            // Stops if encounters a piece (and the piece isn't itself)
                             if i != 0 {
-                                continue_xloop = false;
+                                continue_loop = false;
                             }
                         } else {
-                            /*println!(
-                                //"Found a black piece: {:?}",
-                                vec![position[0] + i, position[1] + i]
-                            );*/
+                            // Stops loop if it encounters a piece of the same color
                             if i != 0 {
-                                continue_xloop = false;
+                                continue_loop = false;
                             }
                         }
-                    } else if continue_xloop {
-                        /*println!(
-                            "Added empty: {:?}",
-                            vec![position[0] + j, position[1] + i]
-                        );*/
+                    } else if continue_loop {
+                        // Adds empty square to
                         bishop_vector.push(vec![position[0] + j, position[1] + i]);
                     }
-                    //bishop_vector.push(vec![i, i]);
-                    //bishop_vector.push(vec![-i, i]);
-                    //bishop_vector.push(vec![-i, -i]);
                 }
                 //println!("bishop_vector: {:?}", bishop_vector.to_vec());
+                //println!("In bishop function");
                 return bishop_vector.to_vec();
             }
 
+            // Adds vertical and horizontal lines to rook and queen's possible moves
             fn rook_function(
                 possible_moves: &mut Vec<Vec<i8>>,
                 position: &Vec<i8>,
@@ -794,19 +808,22 @@ impl Game {
             ) -> Vec<Vec<i8>> {
                 let mut continue_xloop = true;
                 let mut continue_yloop = true;
+
+                // Specifies which direction to go in (starts from the rook's/queen's square)
                 let mut go_up_iter = 0;
                 let mut go_up = true;
+
                 for mut i in -7..8 {
                     if i == 0 {
                         continue_xloop = true;
                         continue_yloop = true;
                     }
-                    //i = -i;
                     if go_up {
                         go_up_iter -= 1;
                         i = go_up_iter;
                     }
-                    // I think it becomes a bug if there's a block on both x and y
+
+                    // I think a bug appears if there's a block on both x and y
                     if (go_up_iter > 8 || go_up_iter < -8) && go_up {
                         go_up_iter = 0;
                         go_up = false
@@ -815,26 +832,20 @@ impl Game {
                         go_up_iter += 1;
                         i = go_up_iter;
                     }
-                    //i = position + loopiterhmm
+
+                    // Add horizontal lines, and stop if it encounters a piece
                     if position[0] + i < 8 && position[0] + i >= 0 && continue_xloop {
                         if board[position[1] as usize][convert_usize(position[0], i)] != None {
-                            //println!("Hello 1");
-                            //println!("{:?}", board[position[1] as usize]
-                            //[position[0] as usize + i as usize]
-                            //.unwrap()
-                            //.color);
                             if board[position[1] as usize][convert_usize(position[0], i)]
                                 .unwrap()
                                 .color
                                 != *color
                             {
-                                //println!("Hello 2");
                                 possible_moves.push(vec![position[0] + i, position[1]]);
                                 if i != 0 {
                                     continue_xloop = false;
                                 }
                             } else {
-                                //println!("Hello 3");
                                 if i != 0 {
                                     continue_xloop = false;
                                 }
@@ -842,46 +853,31 @@ impl Game {
                         } else {
                             possible_moves.push(vec![position[0] + i, position[1]]);
                         }
-                        // vec![vec![_position[0], _position[1] + 1], vec![_position[0], _position[1] + 2]]
                     }
-                    //println!("{} {}", position[1] + i, position[0] as usize);
-                    //println!("{:?}", board[0][3]);
+
+                    // Add vertical lines, and stop if it encounters a piece
                     if position[1] + i < 8 && position[1] + i >= 0 && continue_yloop {
                         if board[convert_usize(position[1], i)][position[0] as usize] != None {
-                            //println!("Hello 4");
                             if board[convert_usize(position[1], i)][position[0] as usize]
                                 .unwrap()
                                 .color
                                 != *color
                             {
-                                //println!("Hello 5");
                                 possible_moves.push(vec![position[0], position[1] + i]);
                                 if i != 0 {
                                     continue_yloop = false;
                                 }
                             } else {
-                                //println!("Hello 6");
                                 if i != 0 {
                                     continue_yloop = false;
                                 }
                             }
                         } else {
-                            //println!("Hello 7");
                             possible_moves.push(vec![position[0], position[1] + i]);
                         }
-                        // vec![vec![_position[0], _position[1] + 1], vec![_position[0], _position[1] + 2]]
                     }
                 }
                 return possible_moves.to_vec();
-            }
-
-            fn convert_usize(possiblenegative: i8, othertoconvert: i8) -> usize {
-                let sum = possiblenegative + othertoconvert;
-                if sum < 0 || sum > 7 {
-                    return 7 as usize;
-                } else {
-                    return sum as usize;
-                }
             }
 
             let mut new_position = if current_piecetype == PieceType::Pawn {
@@ -890,15 +886,15 @@ impl Game {
                 let start_position = if own_color == Color::Black { 1 } else { 6 };
                 let promotion_position = if own_color == Color::Black { 7 } else { 0 };
                 let mut possible_moves = vec![];
+
+                // Adds one step forward to possible_moves if the square is empty
                 if self.board[convert_usize(_position[1], to_add_one)][_position[0] as usize]
                     == None
                 {
                     possible_moves.push(vec![_position[0], _position[1] + to_add_one]);
                 }
-                /*println!(
-                    "Test: {:?}",
-                    self.board[convert_usize(_position[1], to_add_two)][_position[0] as usize]
-                );*/
+
+                // Adds two steps forward to possible_moves if the pawn is in its initial position
                 if _position[1] == start_position
                     && self.board[convert_usize(_position[1], to_add_two)][_position[0] as usize]
                         == None
@@ -906,27 +902,20 @@ impl Game {
                         == None
                 {
                     possible_moves.push(vec![_position[0], _position[1] + to_add_two]);
-                    //vec![vec![_position[0], _position[1] + 1], vec![_position[0], _position[1] + 2]]
                 }
-                if _position[1] == promotion_position {
-                    self.set_promotion(PieceType::Queen)
-                }
-                //println!("{:?}", self.board[1][0].unwrap().piecetype);
+
+                // Adds the diagonal capture move if a piece of the opposite color is there
                 for i in 0..8 {
                     for j in 0..8 {
-                        if self.board[i][j] != None
-                        /*|| self.board[i][j] == Some(Piece::Rook(Color::Black))*/
-                        {
+                        if self.board[i][j] != None {
                             if self.board[i][j].unwrap().color == opposite_color {
                                 if i as i8 == _position[1] + to_add_one
                                     && (j as i8 == _position[0] + 1 || j as i8 == _position[0] - 1)
                                 {
-                                    //println!("Index {} {}", j, i);
-                                    //println!("{:?}", self.board[i][j].unwrap());
                                     possible_moves.push(vec![j as i8, i as i8]);
                                 }
                             }
-                            // En passant below
+                            // Start of en passant below
                             /*if self.board[i][j].unwrap().color == opposite_color {
                                 if j as i8 == 6 - start_position && j as i8 == _position[1] + to_add_one
                                     && i as i8 == _position[1] + to_add_one
@@ -948,11 +937,8 @@ impl Game {
                 possible_moves
             } else if current_piecetype == PieceType::Knight {
                 let mut possible_moves = vec![];
-                /*let knight_vector = vec![-1, 1];
-                let otherknight_vector = vec![-2, 2]
-                for i in 0..2 {
-                    possible_moves.push(vec![_position[0]+knight_vector[i], _position[1] + otherknight_vector[i]]);
-                }*/
+
+                // All the different moves a knight can make (relative to current position)
                 let knight_vector = vec![
                     vec![1, 2],
                     vec![-1, 2],
@@ -963,10 +949,13 @@ impl Game {
                     vec![2, 1],
                     vec![-2, -1],
                 ];
+
                 possible_moves = add_function(knight_vector, possible_moves, &_position);
                 possible_moves
             } else if current_piecetype == PieceType::King {
                 let mut possible_moves = vec![];
+
+                // All the different moves a king can make (relative to current position)
                 let kingvector = vec![
                     vec![1, 1],
                     vec![-1, -1],
@@ -977,64 +966,53 @@ impl Game {
                     vec![1, -1],
                     vec![-1, 1],
                 ];
+
                 possible_moves = add_function(kingvector, possible_moves, &_position);
                 possible_moves
             } else if current_piecetype == PieceType::Bishop {
                 let mut bishop_vector = vec![];
-                let possible_moves =
-                    bishop_function(&mut bishop_vector, &self.board, &own_color, &_position);
-                // You'll need to add limits for it
-                //println!("{:?}", bishop_vector);
-                //possible_moves = add_function(bishop_vector, possible_moves, &_position);
+                let possible_moves = bishop_function(&mut bishop_vector, &self.board, &own_color, &_position);
+                //println!("{:?}", possible_moves);
                 possible_moves
             } else if current_piecetype == PieceType::Queen {
                 let mut queen_vector = vec![];
                 let mut possible_moves =
                     bishop_function(&mut queen_vector, &self.board, &own_color, &_position);
-                //println!("{:?}", queen_vector);
-                //possible_moves = add_function(queen_vector, possible_moves, &_position);
-                //println!("{:?}", possible_moves);
                 rook_function(&mut possible_moves, &_position, &self.board, &own_color);
-                /*for i in 0..vectorfromrookqueen.iter().count() {
-                    println!("hello");
-                }*/
-                //possible_moves.push(rook_function(&mut possible_moves, &_position, &self.board, &own_color));
+
                 possible_moves
             } else {
                 vec![vec![0, 3]]
             };
+
+            // Sort out the piece's current position from new_position
             new_position.retain(|x| !(x[0] == _position[0] && x[1] == _position[1]));
+
+            // Sort out duplicates
             new_position.dedup();
+
             //println!("{:?}", new_position);
-            /*let mut newarrayiseasier = vec![];
-            for someposition in new_position {
-                if self.board[someposition[1] as usize][someposition[0] as usize] != None {
-                    if self.board[someposition[1] as usize][someposition[0] as usize].unwrap().color != own_color {
-                        newarrayiseasier.push(someposition);
-                    }
-                } else {
-                    newarrayiseasier.push(someposition);
-                }
-            }*/
-            // The Pawn test is maybe unneccessary
+
+            // Removes moves which contain a piece of the same color (only necessary for knight and pawn)
             let mut new_new_position: Vec<Vec<i8>> = vec![];
-            for i in 0..8 {
-                for j in 0..8 {
-                    if new_position.contains(&vec![i, j]) {
-                        //println!("hello 0");
-                        if self.board[j as usize][i as usize] != None {
-                            //println!("hello 0.5");
-                            if self.board[j as usize][i as usize].unwrap().color != own_color {
-                                //println!("hello 1");
+            if current_piecetype == PieceType::Pawn || current_piecetype == PieceType::Knight {
+                for i in 0..8 {
+                    for j in 0..8 {
+                        if new_position.contains(&vec![i, j]) {
+                            if self.board[j as usize][i as usize] != None {
+                                if self.board[j as usize][i as usize].unwrap().color != own_color {
+                                    new_new_position.push(vec![i, j]);
+                                }
+                            } else {
                                 new_new_position.push(vec![i, j]);
                             }
-                        } else {
-                            //println!("hello");
-                            new_new_position.push(vec![i, j]);
                         }
                     }
                 }
+            } else {
+                new_new_position = new_position
             }
+            //println!("{:?}", new_new_position);
 
             // Comment out the for and if below if you don't want corpses
             /*for i in 0..8 {
@@ -1052,113 +1030,46 @@ impl Game {
             if new_new_position.iter().count() > 0 {
                 Game::print(&self)
             }*/
-            //let evennewervector : Vec<Vec<i8>> = vec![];
+
             let converted_new_vector = Game::convert_vec_to_string(&new_new_position);
+            //println!("{:?}", converted_new_vector);
 
-            /*for i in 0..new_new_position.iter().count() {
+            // Check for check
+            let mut even_newer_vector: Vec<Vec<i8>> = vec![];
+            let mut even_newer_converted_new_vector: Vec<String> = vec![];
+
+            if should_check {
+                for mut i in 0..converted_new_vector.iter().count() {
                     let saved_boardstate = self.board;
-                    self.make_move(
-                        &Game::convert_vec_to_string(&vec![
-                            useful_hashmap[&myall_possible_moves[i].clone()].clone()
-                        ])[0]
-                            .clone(),
-                        Game::convert_vec_to_string(&vec![myall_possible_moves[i].clone()])[0].clone(), false
+                    let stringposition = &Game::convert_vec_to_string(&vec![_position.to_vec()])[0];
+
+                    Game::make_move(
+                        self,
+                        &stringposition,
+                        converted_new_vector[i].to_string(),
+                        false,
                     );
-                    //println!("Immidiately after move: ");
-                    //self.print();
-                    //self.make_move(&king_positionstring, cloned.to_string());
-                    //self.make_move(cloned.to_string(), king_positionstring);
+
                     let check = Game::check_check(self);
-                    println!("{:?}", check);
-                    self.board = saved_boardstate;
-                    println!("Restored: ");
-                    self.print();
                     if !check {
-                        checkmate = false;
+                        even_newer_vector.push(new_new_position[i].clone());
+                        even_newer_converted_new_vector.push(converted_new_vector[i].clone());
                     }
+                    self.board = saved_boardstate;
                 }
-            }*/
-            //Game::checkmate(self);
+            } else {
+                even_newer_vector = new_new_position;
+                even_newer_converted_new_vector = converted_new_vector;
+            }
 
-            //let even_newer_converted_new_vector = Game::convert_vec_to_string(&evennewervector);
-            return (converted_new_vector, new_new_position);
-
-            // You need to check for checkmate in Get Possible Moves
+            return (even_newer_converted_new_vector, even_newer_vector);
         }
     }
 }
 
-/// Implement print routine for Game.
-///
-/// Output example:
-/// |:----------------------:|
-/// | R  Kn B  K  Q  B  Kn R |
-/// | P  P  P  P  P  P  P  P |
-/// | *  *  *  *  *  *  *  * |
-/// | *  *  *  *  *  *  *  * |
-/// | *  *  *  *  *  *  *  * |
-/// | *  *  *  *  *  *  *  * |
-/// | P  P  P  P  P  P  P  P |
-/// | R  Kn B  K  Q  B  Kn R |
-/// |:----------------------:|
-
-/*impl Print for Game {
-    none
-}*/
-
+// Makes it possible to print game 
 impl fmt::Debug for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        /* build board representation string */
-
         write!(f, "")
-    }
-}
-
-// --------------------------
-// ######### TESTS ##########
-// --------------------------
-
-#[cfg(test)]
-mod tests {
-    use super::Game;
-    use super::GameState;
-
-    // check test framework
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-
-    // example test
-    // check that game state is in progress after initialisation
-    #[test]
-    fn game_in_progress_after_init() {
-        let game = Game::new();
-
-        println!("{:?}", game);
-
-        assert_eq!(game.get_game_state(), GameState::InProgress);
-    }
-
-    /*fn move_a_pawn() {
-        let game = Game::new();
-        Game::make_move(&mut game, "A2".to_string(), "A3".to_string());
-        assert_eq!(game.get_game_state(), GameState::InProgress);
-    }*/
-
-    #[test]
-    fn get_possible_moves_pawn() {
-        let mut game = Game::new();
-        let (irrelevant, possible_moves) = Game::get_possible_moves(&mut game, &vec![0, 1]);
-        println!("{:?}", irrelevant);
-        assert_eq!(vec!["A6".to_string(), "A5".to_string()], irrelevant);
-    }
-
-    #[test]
-    fn get_possible_moves_knight() {
-        let mut game = Game::new();
-        let (irrelevant, possible_moves) = Game::get_possible_moves(&mut game, &vec![1, 0]);
-        println!("{:?}", irrelevant);
-        assert_eq!(vec!["A6".to_string(), "C6".to_string()], irrelevant);
     }
 }

@@ -94,3 +94,41 @@ impl Extension for lib::Game {
         Game::make_move(self, &best_move, best_move_to.to_string(), true);
         Game::print(self);
     }*/
+
+                // Chose to avoid checking for check here, because it would be very computationally expensive
+            //
+            // This was the beginning of integrating check rules (and sorting out impossible moves)
+            //let evennewervector : Vec<Vec<i8>> = vec![]
+            /*for i in 0..new_new_position.iter().count() {
+                    let saved_boardstate = self.board;
+                    self.make_move(
+                        &Game::convert_vec_to_string(&vec![
+                            useful_hashmap[&myall_possible_moves[i].clone()].clone()
+                        ])[0]
+                            .clone(),
+                        Game::convert_vec_to_string(&vec![myall_possible_moves[i].clone()])[0].clone(), false
+                    );
+                    //println!("Immidiately after move: ");
+                    //self.print();
+                    //self.make_move(&king_positionstring, cloned.to_string());
+                    //self.make_move(cloned.to_string(), king_positionstring);
+                    let check = Game::check_check(self);
+                    println!("{:?}", check);
+                    self.board = saved_boardstate;
+                    println!("Restored: ");
+                    self.print();
+                    if !check {
+                        checkmate = false;
+                    }
+                }
+            }*/
+            //Game::checkmate(self);
+            //let even_newer_converted_new_vector = Game::convert_vec_to_string(&evennewervector);
+
+            impl fmt::Debug for Game {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        /* build board representation string */
+
+        write!(f, "")
+    }
+}
