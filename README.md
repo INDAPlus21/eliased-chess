@@ -1,6 +1,6 @@
 # eliased-chess
 
-Observe that the AI isn't finished (and that that part of the code looks horrific), and that I haven't implement en passant, castling, nor deadposition. 
+Observe that the AI isn't finished (and that that part of the code looks horrific), and that I haven't implemented en passant, castling, nor deadposition. 
 
 | **Function** | **Description** |
 |--------------|-----------------|
