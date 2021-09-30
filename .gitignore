@@ -1,3 +1,4 @@
 /target
 Cargo.lock
 src/abandonedcode.rs
+src/main.rs
