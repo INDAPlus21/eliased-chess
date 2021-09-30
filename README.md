@@ -10,8 +10,8 @@ Observe that the AI isn't finished (and that that part of the code looks horrifi
 | `pub fn get_game_state(&self) -> GameState` | Gets the current game state. |
 | `pub fn get_possible_moves(&mut self, _position: &Vec<i8>, should_check: bool) -> (Vec<String>, Vec<Vec<i8>>)` | If a piece is standing on the given tile, return all possible new positions of that piece. should_check is whether it should sort away moves that result in check. Positions are given as a vector with the format vec![x position, y position], starting from zero from the left/top. |
 | `pub fn play_the_game(&mut self)` | Plays the game in the terminal with string inputs. |
-| `chess_ai(&mut self)` | A terrible AI that plays against itself. |
+| `pub fn chess_ai(&mut self)` | A terrible AI that plays against itself. |
 | `pub fn better_chess_ai(&mut self)` | A terrible AI that plays against itself while looking forward 2 steps (and crashes for some reason). |
-| `fn checkmate(&mut self) -> bool` | Returns if it's checkmate or not. |
+| `pub fn checkmate(&mut self) -> bool` | Returns if it's checkmate or not. |
 | `pub fn print(&self)` | Prints the board in unicode. |
 
