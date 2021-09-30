@@ -234,9 +234,17 @@ mod tests {
         println!("Does it look right?");
     }
 
-    #[test]
+    // Uncomment this to test the game yourself 
+    /*#[test]
     fn test_it_yourself() {
         let mut game = Game::new();
         Game::play_the_game(&mut game);
+    }*/
+
+    // Uncomment this to test the AI 
+    #[test]
+    fn test_it_yourself() {
+        let mut game = Game::new();
+        Game::better_chess_ai(&mut game);
     }
 }

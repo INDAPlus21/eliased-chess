@@ -2,6 +2,8 @@
 
 Observe that the AI isn't finished (and that that part of the code looks horrific), and that I haven't implemented en passant, castling, nor deadposition. 
 
+You can uncomment the last two tests to test the terminal interface and the AI.
+
 | **Function** | **Description** |
 |--------------|-----------------|
 | `pub fn new() -> Game` | Initializes a new board with pieces. |
